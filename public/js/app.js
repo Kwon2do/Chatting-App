@@ -129,7 +129,7 @@ var Message = React.createClass({
             React.createElement(
                 'div',
                 { className: 'message-date' },
-                createdAt
+                createdAt != "Invalid Date" ? { createdAt: createdAt } : ""
             ),
             ' '
         );

@@ -34,7 +34,7 @@ var Message = React.createClass({
             <div className={`${messageClass} ${alignmentClass}`}>
                 <strong>{this.props.user}: </strong>
                 <span>{this.props.text}</span>
-                <div className='message-date'>{createdAt}</div> {/* 생성 시간 표시 */}
+                <div className='message-date'>{createdAt!="Invalid Date"?{createdAt}:""}</div> {/* 생성 시간 표시 */}
             </div>
         );
     }
