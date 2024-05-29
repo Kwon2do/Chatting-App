@@ -1,199 +1,66 @@
 'use strict';
 
 var React = require('react');
+var Signup = require('./signup.jsx');
+var ChatApp = require('./chat.jsx');
+var ChattingRoom = require('./chattingroomList.jsx');
+var axios = require('axios'); // axios 임포트
 
-var socket = io.connect();
+var App = React.createClass({
 
-var UsersList = React.createClass({
-	render() {
-		return (
-			<div className='users'>
-				<h3> 참여자들 </h3>
-				<ul>
-					{
-						this.props.users.map((user, i) => {
-							return (
-								<li key={i}>
-									{user}
-								</li>
-							);
-						})
-					}
-				</ul>				
-			</div>
-		);
-	}
+    getInitialState() {
+        return { page: 'signup', user: null, roomName: '' };
+    },
+
+    handleSignup(name) {
+        this.setState({ user: name, page: "signup" });
+        alert("회원가입이 완료되었습니다");
+    },
+    
+    handleSignin(name, id) {
+        this.setState({ user: name, userId: id, page: "chattingroom" });
+    },
+    
+    handleChangePage(page) {
+        this.setState({ page: page });
+    },
+    
+    handleRoomSelect(roomId) {
+        // roomId를 상태에 설정하고 chat 페이지로 전환
+        this.setState({ roomId: roomId });
+        // 채팅방 ID를 사용하여 채팅방 이름을 가져오는 API 호출
+        axios.get(`/api/rooms/${roomId}`)
+            .then(response => {
+                this.setState({ roomname: response.data.roomname, page: 'chat' });
+            })
+            .catch(error => {
+                console.error("채팅방 이름을 가져오는 중 오류 발생:", error);
+            });
+    },
+    onClickBackBtn(){
+        this.setState({page:"chattingroom"});
+    },
+
+    render() {
+        var Page;
+        switch (this.state.page) {
+            case 'signup':
+                Page = <Signup onSignup={this.handleSignup} onSignin={this.handleSignin} onChangePage={this.handleChangePage} />;
+                break;
+            case 'chat':
+                Page = <ChatApp roomId={this.state.roomId} roomname={this.state.roomname} userId={this.state.userId} user={this.state.user} onClickBackBtn={this.onClickBackBtn}/>;
+                break;
+            case 'chattingroom':
+                Page = <ChattingRoom onRoomSelect={this.handleRoomSelect} handleChangePage={this.handleChangePage}/>;
+                break;
+        }
+
+        return (
+            <div>
+                {Page}
+            </div>
+        );
+    }
 });
 
-var Message = React.createClass({
-	render() {
-		return (
-			<div className="message">
-				<strong>{this.props.user} :</strong> 
-				<span>{this.props.text}</span>		
-			</div>
-		);
-	}
-});
-
-var MessageList = React.createClass({
-	render() {
-		return (
-			<div className='messages'>
-				<h2> 채팅방 </h2>
-				{
-					this.props.messages.map((message, i) => {
-						return (
-							<Message
-								key={i}
-								user={message.user}
-								text={message.text} 
-							/>
-						);
-					})
-				} 
-			</div>
-		);
-	}
-});
-
-var MessageForm = React.createClass({
-
-	getInitialState() {
-		return {text: ''};
-	},
-
-	handleSubmit(e) {
-		e.preventDefault();
-		var message = {
-			user : this.props.user,
-			text : this.state.text
-		}
-		this.props.onMessageSubmit(message);	
-		this.setState({ text: '' });
-	},
-
-	changeHandler(e) {
-		this.setState({ text : e.target.value });
-	},
-
-	render() {
-		return(
-			<div className='message_form'>
-				<form onSubmit={this.handleSubmit}>
-					<input
-						placeholder='메시지 입력'
-						className='textinput'
-						onChange={this.changeHandler}
-						value={this.state.text}
-					/>
-					<h3></h3>
-				</form>
-			</div>
-		);
-	}
-});
-
-var ChangeNameForm = React.createClass({
-	getInitialState() {
-		return {newName: ''};
-	},
-
-	onKey(e) {
-		this.setState({ newName : e.target.value });
-	},
-
-	handleSubmit(e) {
-		e.preventDefault();
-		var newName = this.state.newName;
-		this.props.onChangeName(newName);	
-		this.setState({ newName: '' });
-	},
-
-	render() {
-		return(
-			<div className='change_name_form'>
-				<h3> 아이디 변경 </h3>
-				<form onSubmit={this.handleSubmit}>
-					<input
-						placeholder='변경할 아이디 입력'
-						onChange={this.onKey}
-						value={this.state.newName} 
-					/>
-				</form>	
-			</div>
-		);
-	}
-});
-
-var ChatApp = React.createClass({
-
-	getInitialState() {
-		return {users: [], messages:[], text: ''};
-	},
-
-	componentDidMount() {
-		socket.on('init', this._initialize);
-		socket.on('send:message', this._messageRecieve);
-		socket.on('user:join', this._userJoined);
-		socket.on('user:left', this._userLeft);
-		socket.on('change:name', this._userChangedName);
-	},
-
-	_initialize(data) {
-		var {users, name} = data;
-		this.setState({users, user: name});
-	},
-
-	_messageRecieve(message) {
-		var {messages} = this.state;
-		messages.push(message);
-		this.setState({messages});
-	},
-
-	handleMessageSubmit(message) {
-		var {messages} = this.state;
-		messages.push(message);
-		this.setState({messages});
-		socket.emit('send:message', message);
-	},
-
-	handleChangeName(newName) {
-		var oldName = this.state.user;
-		socket.emit('change:name', { name : newName}, (result) => {
-			if(!result) {
-				return alert('There was an error changing your name');
-			}
-			var {users} = this.state;
-			var index = users.indexOf(oldName);
-			users.splice(index, 1, newName);
-			this.setState({users, user: newName});
-		});
-	},
-
-	render() {
-		return (
-			<div>
-			<div className='center'>
-			<UsersList
-				users={this.state.users}
-			/>
-			<ChangeNameForm
-				onChangeName={this.handleChangeName}
-			/>
-			{/* <div> */}
-				<MessageList
-					messages={this.state.messages}
-				/>
-				<MessageForm
-					onMessageSubmit={this.handleMessageSubmit}
-					user={this.state.user}
-				/>
-			{/* </div> */}
-			</div>
-			</div>
-		);
-	}
-});
-
-React.render(<ChatApp/>, document.getElementById('app'));
+React.render(<App />, document.getElementById('app'));
