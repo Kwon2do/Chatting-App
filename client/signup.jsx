@@ -32,15 +32,13 @@ var Signup = React.createClass({
             alert('회원가입이 완료되었습니다.');
             setTimeout(() => {
                 window.location.reload(); // 페이지 새로고침
-            }, 500); // 0.5초 지연을 주어 alert가 먼저 실행되도록 함
+            }, 500); // 0.5초지연을 주어 alert가 먼저 실행되도록 함
         })
         .catch(error => {
             // 오류 처리
             console.error('Error:', error);
             if (error.response && error.response.status === 409) {
                 this.setState({ alertMessage: '⚠️이미 존재하는 아이디입니다.' });
-            } else {
-                this.setState({ alertMessage: '⚠️회원가입 중 오류가 발생했습니다.' });
             }
         });
     },

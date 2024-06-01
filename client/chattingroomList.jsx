@@ -19,9 +19,9 @@ var ChatRoomListAndSearchPage = React.createClass({
         .then(response => {
             console.log(response);
             alert('채팅방이 개설되었습니다.');
-            // Navigate to the newly created chat room
+            // 생성된 새로운 채팅방으로 즉시 이동
             this.props.onRoomSelect(response.data.roomId);
-            this.setState({ searchText: '' }); // Reset search state
+            this.setState({ searchText: '' });
         })
         .catch(error => {
             console.error('Error:', error);

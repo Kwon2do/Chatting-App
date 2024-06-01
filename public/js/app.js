@@ -257,7 +257,7 @@ var ChatApp = React.createClass({
         socket.on('init', this._initialize);
         socket.on('send:message', this._messageRecieve);
         // 사용자가 채팅방에 입장했을 때 서버로부터 받는 이벤트 처리
-        this.fetchMessagesFromDatabase();
+        this.fetchDBMessages();
         socket.on('get:messages', function (messages) {
             var modifiedMessages = messages.map(function (message) {
                 return {
@@ -270,7 +270,7 @@ var ChatApp = React.createClass({
                 return {
                     messages: [].concat(_toConsumableArray(prevState.messages), _toConsumableArray(modifiedMessages))
                 };
-            }, _this2.scrollToBottom); // 초기 메시지를 로드한 후 스크롤
+            });
         });
         var userId = this.props.userId;
         var username = this.props.user;
@@ -311,7 +311,7 @@ var ChatApp = React.createClass({
         this.setState({ users: users, user: name });
     },
 
-    fetchMessagesFromDatabase: function fetchMessagesFromDatabase() {
+    fetchDBMessages: function fetchDBMessages() {
         socket.emit('get:messages', this.state.roomId);
     },
 
@@ -416,8 +416,6 @@ var SearchChat = React.createClass({
 });
 
 //채팅방 개설
-
-// 채팅방 목록 컴포넌트
 // 채팅방 목록 컴포넌트
 var ChatRoomList = React.createClass({
     displayName: 'ChatRoomList',
@@ -519,9 +517,9 @@ var ChatRoomListAndSearchPage = React.createClass({
         }).then(function (response) {
             console.log(response);
             alert('채팅방이 개설되었습니다.');
-            // Navigate to the newly created chat room
+            // 생성된 새로운 채팅방으로 즉시 이동
             _this.props.onRoomSelect(response.data.roomId);
-            _this.setState({ searchText: '' }); // Reset search state
+            _this.setState({ searchText: '' });
         })['catch'](function (error) {
             console.error('Error:', error);
         });
@@ -601,14 +599,12 @@ var Signup = React.createClass({
             alert('회원가입이 완료되었습니다.');
             setTimeout(function () {
                 window.location.reload(); // 페이지 새로고침
-            }, 500); // 0.5초 지연을 주어 alert가 먼저 실행되도록 함
+            }, 500); // 0.5초지연을 주어 alert가 먼저 실행되도록 함
         })['catch'](function (error) {
             // 오류 처리
             console.error('Error:', error);
             if (error.response && error.response.status === 409) {
                 _this.setState({ alertMessage: '⚠️이미 존재하는 아이디입니다.' });
-            } else {
-                _this.setState({ alertMessage: '⚠️회원가입 중 오류가 발생했습니다.' });
             }
         });
     },

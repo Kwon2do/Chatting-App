@@ -107,8 +107,8 @@ app.post("/api/rooms/create", (req, res) => {
       res.status(500).send("채팅방 생성에 실패했습니다.");
       return;
     }
-    const roomId = result.insertId; // Retrieve the roomId from the result
-    res.json({ roomId: roomId }); // Send the roomId as JSON response
+    const roomId = result.insertId;
+    res.json({ roomId: roomId });
   });
 });
 
@@ -126,19 +126,9 @@ var io = require("socket.io")(server);
 
 io.on("connection", (socket) => {
   console.log("A user connected");
-  // 유저 목록 저장
-  const users = {};
-  // 새로운 사용자가 채팅방에 입장했을 때 처리
-  socket.on("user:join", (user) => {
-    // 새로운 사용자를 목록에 추가
-    users[socket.id] = user;
-    console.log(user);
-    // 모든 클라이언트에게 업데이트된 사용자 목록을 전달
-    io.emit("update:users", Object.values(users));
-  });
 
-  // 클라이언트로부터 요청이 있을 때 해당 채팅방의 메시지를 DB에서 가져오는 함수 추가
-  function fetchMessagesFromDatabase(socket, roomId, callback) {
+  //클라이언트에서 roomId 전달받아서 db에서 메시지 목록 가져오기
+  function fetchDBMessages(socket, roomId) {
     const query = `
     SELECT messages.message, messages.createdAt, users.userId 
     FROM messages 
@@ -146,25 +136,22 @@ io.on("connection", (socket) => {
     WHERE messages.roomId = ?
     ORDER BY messages.createdAt ASC
   `;
-    conn.query(query, [roomId], (error, results, fields) => {
+    conn.query(query, [roomId], (error, results) => {
       if (error) {
-        console.error("Error fetching messages from database:", error);
-        callback(error, null); // 에러가 발생했을 때 콜백 호출
+        console.error("DB에서 데이터를 받아오지 못했습니다.", error);
       } else {
-        // 클라이언트에게 메시지 전송
+        //조회결과를 클라이언트에 전송
         socket.emit("get:messages", results);
-        callback(null, results); // 결과를 콜백 호출
       }
     });
   }
 
   socket.on("get:messages", function (roomId) {
-    fetchMessagesFromDatabase(socket, roomId, (error, messages) => {
+    fetchDBMessages(socket, roomId, (error, messages) => {
       if (error) {
-        console.error("Error fetching messages:", error);
+        console.error("DB에서 데이터를 받아오지 못했습니다.", error);
       } else {
-        console.log("Fetched messages:", messages);
-        // 클라이언트에게 한 번만 응답 보내기
+        console.log("메시지목록 조회결과:", messages);
       }
     });
   });
@@ -174,7 +161,7 @@ io.on("connection", (socket) => {
     const query = "INSERT INTO messages (roomId, id, message) VALUES (?, ?, ?)";
     conn.query(query, [data.roomId, data.id, data.text], (err, results) => {
       if (err) {
-        console.error("Error inserting message: " + err);
+        console.error("메시지 저장 실패 " + err);
         return;
       }
       console.log("메시지 DB에 저장 완료: " + results.insertId);

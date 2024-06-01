@@ -129,21 +129,21 @@ var ChatApp = React.createClass({
         };
     },
     // 사용자를 목록에 추가하는 함수
-addUserToList(user) {
-    const updatedUsers = [...this.state.users, user]; // 기존 사용자 목록에 새로운 사용자 추가
-    this.setState({ users: updatedUsers }); // 상태 업데이트
-},
+    addUserToList(user) {
+        const updatedUsers = [...this.state.users, user]; // 기존 사용자 목록에 새로운 사용자 추가
+        this.setState({ users: updatedUsers }); // 상태 업데이트
+    },
 
-// 사용자를 목록에서 제거하는 함수
-removeUserFromList(user) {
-    const updatedUsers = this.state.users.filter(existingUser => existingUser !== user); // 해당 사용자를 목록에서 제외
-    this.setState({ users: updatedUsers }); // 상태 업데이트
-},
+    // 사용자를 목록에서 제거하는 함수
+    removeUserFromList(user) {
+        const updatedUsers = this.state.users.filter(existingUser => existingUser !== user); // 해당 사용자를 목록에서 제외
+        this.setState({ users: updatedUsers }); // 상태 업데이트
+    },
     componentDidMount() {
         socket.on('init', this._initialize);
         socket.on('send:message', this._messageRecieve);
         // 사용자가 채팅방에 입장했을 때 서버로부터 받는 이벤트 처리
-        this.fetchMessagesFromDatabase();
+        this.fetchDBMessages();
         socket.on('get:messages', (messages) => {
             const modifiedMessages = messages.map(message => ({
                 user: message.userId,
@@ -152,7 +152,7 @@ removeUserFromList(user) {
             }));
             this.setState(prevState => ({
                 messages: [...prevState.messages, ...modifiedMessages]
-            }), this.scrollToBottom); // 초기 메시지를 로드한 후 스크롤
+            }));
         });
         const userId = this.props.userId;
         const username = this.props.user;
@@ -191,7 +191,7 @@ removeUserFromList(user) {
         this.setState({ users, user: name });
     },
 
-    fetchMessagesFromDatabase() {
+    fetchDBMessages() {
         socket.emit('get:messages', this.state.roomId);
     },
 
