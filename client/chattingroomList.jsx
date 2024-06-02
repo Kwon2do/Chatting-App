@@ -1,5 +1,6 @@
 var React = require('react');
 var axios = require('axios');
+var NavigationBar = require('./navigation.jsx');
 var { SearchChat, ChatRoomList } = require('./chattingroom.jsx');
 
 var ChatRoomListAndSearchPage = React.createClass({
@@ -42,6 +43,7 @@ var ChatRoomListAndSearchPage = React.createClass({
                         onRoomSelect={this.props.onRoomSelect}
                     />
                 </div>
+                <NavigationBar onClickJoinedRoom={this.props.onClickJoinedRoom} onClickBackBtn={this.props.onClickBackBtn}></NavigationBar>
             </div>
         );
     }

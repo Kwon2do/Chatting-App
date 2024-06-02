@@ -111,6 +111,24 @@ app.post("/api/rooms/create", (req, res) => {
     res.json({ roomId: roomId });
   });
 });
+/*참여중인 채팅방 목록*/
+app.get("/api/joined-roomlist/:userId", (req, res) => {
+  const userId = req.params.userId; // 요청에서 사용자 ID를 가져옴
+  const query = `
+    SELECT chat.roomname, chat.roomId
+    FROM messages AS m
+    JOIN chattingroom AS chat ON m.roomId = chat.roomId
+    WHERE m.id = ?
+  `;
+  conn.query(query, [userId], (error, results) => {
+    if (error) {
+      console.error("Error fetching chat rooms:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+      return;
+    }
+    res.status(200).json(results); // 결과를 클라이언트에게 반환
+  });
+});
 
 // JSON 및 URL-encoded 파싱을 위한 미들웨어 설정
 app.use(express.json());

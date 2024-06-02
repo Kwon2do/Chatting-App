@@ -1,7 +1,6 @@
 'use strict'
 var React = require('react');
 var axios = require('axios');
-
 // 채팅 검색 컴포넌트
 var SearchChat = React.createClass({
     handleChange(e) {
@@ -48,7 +47,7 @@ var ChatRoomList = React.createClass({
     handleRoomClick(roomId) {
         // 부모 컴포넌트로 선택한 채팅방의 id를 전달
         sessionStorage.setItem("roomId", roomId);
-        // 정상적으로 roomId 받아온다!
+        // 정상적으로 roomId 받아온다!a
         console.log(roomId);
     },
 
@@ -60,7 +59,7 @@ var ChatRoomList = React.createClass({
         return (
             <div>
                 {/* 채팅방 목록 UI */}
-                <h2>채팅방 목록</h2>
+                <h2>전체 채팅방</h2>
                 <span className='chatlistWrapper'>
                     {filteredRooms.map(room => (
                         <span

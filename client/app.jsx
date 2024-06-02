@@ -4,7 +4,9 @@ var React = require('react');
 var Signup = require('./signup.jsx');
 var ChatApp = require('./chat.jsx');
 var ChattingRoom = require('./chattingroomList.jsx');
+var JoinedChattingRoom = require('./joinedchatting.jsx')
 var axios = require('axios'); // axios 임포트
+const JoinedRoom = require('./joinedchatting.jsx');
 
 var App = React.createClass({
 
@@ -40,6 +42,9 @@ var App = React.createClass({
     onClickBackBtn(){
         this.setState({page:"chattingroom"});
     },
+    onClickJoinedRoom(){
+        this.setState({page:"joinedchatting"});
+    },
 
     render() {
         var Page;
@@ -51,13 +56,16 @@ var App = React.createClass({
                 Page = <ChatApp roomId={this.state.roomId} roomname={this.state.roomname} userId={this.state.userId} user={this.state.user} onClickBackBtn={this.onClickBackBtn}/>;
                 break;
             case 'chattingroom':
-                Page = <ChattingRoom onRoomSelect={this.handleRoomSelect} handleChangePage={this.handleChangePage}/>;
+                Page = <ChattingRoom onRoomSelect={this.handleRoomSelect} handleChangePage={this.handleChangePage} onClickJoinedRoom={this.onClickJoinedRoom}/>;
                 break;
+            case 'joinedchatting':
+                Page = <JoinedRoom userId={this.state.userId} onClickBackBtn={this.onClickBackBtn} onRoomSelect={this.handleRoomSelect}/>;
+                break;    
         }
 
         return (
             <div>
-                {Page}
+            {Page}
             </div>
         );
     }
