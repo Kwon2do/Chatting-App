@@ -1,5 +1,4 @@
 var React = require('react');
-var axios = require('axios');
 var socket = io.connect();
 
 var UsersList = React.createClass({
@@ -166,9 +165,10 @@ var ChatApp = React.createClass({
         this.fetchRoomName(); // 채팅방 이름 가져오기
     },
     fetchRoomName() {
-        axios.get(`/api/rooms/${this.state.roomId}`)
-            .then(response => {
-                this.setState({ roomName: response.data.roomname });
+        fetch(`/api/rooms/${this.state.roomId}`)
+            .then(response => response.json())
+            .then(data => {
+                this.setState({ roomName: data.roomname });
             })
             .catch(error => {
                 console.error("Error fetching room name:", error);

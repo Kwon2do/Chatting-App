@@ -1,6 +1,6 @@
 'use strict'
 var React = require('react');
-var axios = require('axios');
+
 // 채팅 검색 컴포넌트
 var SearchChat = React.createClass({
     handleChange(e) {
@@ -33,11 +33,12 @@ var ChatRoomList = React.createClass({
 
     componentDidMount() {
         // 서버에서 채팅방 목록을 가져옴
-        axios.get('/api/chatting-room')
-            .then(response => {
+        fetch('/api/chatting-room')
+            .then(response => response.json())
+            .then(data => {
                 // 가져온 채팅방 목록을 상태에 저장
-                console.log(response.data)
-                this.setState({ rooms: response.data });
+                console.log(data);
+                this.setState({ rooms: data });
             })
             .catch(error => {
                 console.error('Error fetching chat rooms:', error);
@@ -47,7 +48,7 @@ var ChatRoomList = React.createClass({
     handleRoomClick(roomId) {
         // 부모 컴포넌트로 선택한 채팅방의 id를 전달
         sessionStorage.setItem("roomId", roomId);
-        // 정상적으로 roomId 받아온다!a
+        // 정상적으로 roomId 받아온다!
         console.log(roomId);
     },
 

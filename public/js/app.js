@@ -5,8 +5,6 @@ var React = require('react');
 var Signup = require('./signup.jsx');
 var ChatApp = require('./chat.jsx');
 var ChattingRoom = require('./chattingroomList.jsx');
-var JoinedChattingRoom = require('./joinedchatting.jsx');
-var axios = require('axios'); // axios 임포트
 var JoinedRoom = require('./joinedchatting.jsx');
 
 var App = React.createClass({
@@ -35,8 +33,10 @@ var App = React.createClass({
         // roomId를 상태에 설정하고 chat 페이지로 전환
         this.setState({ roomId: roomId });
         // 채팅방 ID를 사용하여 채팅방 이름을 가져오는 API 호출
-        axios.get('/api/rooms/' + roomId).then(function (response) {
-            _this.setState({ roomname: response.data.roomname, page: 'chat' });
+        fetch('/api/rooms/' + roomId).then(function (response) {
+            return response.json();
+        }).then(function (data) {
+            _this.setState({ roomname: data.roomname, page: 'chat' });
         })['catch'](function (error) {
             console.error("채팅방 이름을 가져오는 중 오류 발생:", error);
         });
@@ -75,13 +75,12 @@ var App = React.createClass({
 
 React.render(React.createElement(App, null), document.getElementById('app'));
 
-},{"./chat.jsx":2,"./chattingroomList.jsx":4,"./joinedchatting.jsx":5,"./signup.jsx":7,"axios":8,"react":192}],2:[function(require,module,exports){
+},{"./chat.jsx":2,"./chattingroomList.jsx":4,"./joinedchatting.jsx":5,"./signup.jsx":7,"react":192}],2:[function(require,module,exports){
 'use strict';
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
 var React = require('react');
-var axios = require('axios');
 var socket = io.connect();
 
 var UsersList = React.createClass({
@@ -294,8 +293,10 @@ var ChatApp = React.createClass({
     fetchRoomName: function fetchRoomName() {
         var _this3 = this;
 
-        axios.get('/api/rooms/' + this.state.roomId).then(function (response) {
-            _this3.setState({ roomName: response.data.roomname });
+        fetch('/api/rooms/' + this.state.roomId).then(function (response) {
+            return response.json();
+        }).then(function (data) {
+            _this3.setState({ roomName: data.roomname });
         })['catch'](function (error) {
             console.error("Error fetching room name:", error);
         });
@@ -396,10 +397,10 @@ var ChatApp = React.createClass({
 module.exports = ChatApp;
 /* 생성 시간 표시 */ /* 채팅방 이름 표시 */
 
-},{"axios":8,"react":192}],3:[function(require,module,exports){
+},{"react":192}],3:[function(require,module,exports){
 'use strict';
 var React = require('react');
-var axios = require('axios');
+
 // 채팅 검색 컴포넌트
 var SearchChat = React.createClass({
     displayName: 'SearchChat',
@@ -437,10 +438,12 @@ var ChatRoomList = React.createClass({
         var _this = this;
 
         // 서버에서 채팅방 목록을 가져옴
-        axios.get('/api/chatting-room').then(function (response) {
+        fetch('/api/chatting-room').then(function (response) {
+            return response.json();
+        }).then(function (data) {
             // 가져온 채팅방 목록을 상태에 저장
-            console.log(response.data);
-            _this.setState({ rooms: response.data });
+            console.log(data);
+            _this.setState({ rooms: data });
         })['catch'](function (error) {
             console.error('Error fetching chat rooms:', error);
         });
@@ -449,7 +452,7 @@ var ChatRoomList = React.createClass({
     handleRoomClick: function handleRoomClick(roomId) {
         // 부모 컴포넌트로 선택한 채팅방의 id를 전달
         sessionStorage.setItem("roomId", roomId);
-        // 정상적으로 roomId 받아온다!a
+        // 정상적으로 roomId 받아온다!
         console.log(roomId);
     },
 
@@ -493,11 +496,10 @@ var ChatRoomList = React.createClass({
 module.exports = { SearchChat: SearchChat, ChatRoomList: ChatRoomList };
 /* 채팅 검색 UI */ /* 채팅방 목록 UI */
 
-},{"axios":8,"react":192}],4:[function(require,module,exports){
+},{"react":192}],4:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
-var axios = require('axios');
 var NavigationBar = require('./navigation.jsx');
 
 var _require = require('./chattingroom.jsx');
@@ -517,16 +519,23 @@ var ChatRoomListAndSearchPage = React.createClass({
     handleSearchChange: function handleSearchChange(searchText) {
         this.setState({ searchText: searchText });
     },
+
     handleCreate: function handleCreate(e) {
         var _this = this;
 
-        axios.post('/api/rooms/create', {
-            roomname: this.state.searchText
+        fetch('/api/rooms/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ roomname: this.state.searchText })
         }).then(function (response) {
-            console.log(response);
+            return response.json();
+        }).then(function (data) {
+            console.log(data);
             alert('채팅방이 개설되었습니다.');
             // 생성된 새로운 채팅방으로 즉시 이동
-            _this.props.onRoomSelect(response.data.roomId);
+            _this.props.onRoomSelect(data.roomId);
             _this.setState({ searchText: '' });
         })['catch'](function (error) {
             console.error('Error:', error);
@@ -560,18 +569,20 @@ var ChatRoomListAndSearchPage = React.createClass({
                     onRoomSelect: this.props.onRoomSelect
                 })
             ),
-            React.createElement(NavigationBar, { onClickJoinedRoom: this.props.onClickJoinedRoom, onClickBackBtn: this.props.onClickBackBtn })
+            React.createElement(NavigationBar, {
+                onClickJoinedRoom: this.props.onClickJoinedRoom,
+                onClickBackBtn: this.props.onClickBackBtn
+            })
         );
     }
 });
 
 module.exports = ChatRoomListAndSearchPage;
 
-},{"./chattingroom.jsx":3,"./navigation.jsx":6,"axios":8,"react":192}],5:[function(require,module,exports){
+},{"./chattingroom.jsx":3,"./navigation.jsx":6,"react":192}],5:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
-var axios = require('axios');
 var NavigationBar = require('./navigation.jsx');
 
 var _require = require('./chattingroom.jsx');
@@ -599,8 +610,10 @@ var JoinedChattingRoom = React.createClass({
     fetchChatRooms: function fetchChatRooms() {
         var _this = this;
 
-        axios.get('/api/joined-roomlist/' + this.props.userId).then(function (response) {
-            _this.setState({ chatRooms: response.data });
+        fetch('/api/joined-roomlist/' + this.props.userId).then(function (response) {
+            return response.json();
+        }).then(function (data) {
+            _this.setState({ chatRooms: data });
             console.log(_this.state.chatRooms);
         })['catch'](function (error) {
             console.error('Error fetching chat rooms:', error);
@@ -657,7 +670,7 @@ var JoinedChattingRoom = React.createClass({
 
 module.exports = JoinedChattingRoom;
 
-},{"./chattingroom.jsx":3,"./navigation.jsx":6,"axios":8,"react":192}],6:[function(require,module,exports){
+},{"./chattingroom.jsx":3,"./navigation.jsx":6,"react":192}],6:[function(require,module,exports){
 'use strict';
 
 var React = require('react');
@@ -712,19 +725,28 @@ var Signup = React.createClass({
         }
 
         // 회원가입 정보를 서버로 전송
-        axios.post('/api/sign-up', {
-            userId: this.state.name,
-            password: this.state.password
+        fetch('/api/sign-up', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: this.state.name,
+                password: this.state.password
+            })
         }).then(function (response) {
-            // 서버로부터의 응답을 처리
-            console.log(response.data); // 서버에서 받은 데이터
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        }).then(function (data) {
+            console.log(data); // 서버에서 받은 데이터
             _this.props.onSignup(_this.state.name);
             alert('회원가입이 완료되었습니다.');
             setTimeout(function () {
                 window.location.reload(); // 페이지 새로고침
             }, 500); // 0.5초지연을 주어 alert가 먼저 실행되도록 함
         })['catch'](function (error) {
-            // 오류 처리
             console.error('Error:', error);
             if (error.response && error.response.status === 409) {
                 _this.setState({ alertMessage: '⚠️이미 존재하는 아이디입니다.' });
@@ -744,21 +766,20 @@ var Signup = React.createClass({
         }
 
         // 로그인 정보를 서버로 전송
-        axios.get('/api/sign-in', {
-            params: {
-                userId: this.state.name,
-                password: this.state.password
+        fetch('/api/sign-in?userId=' + encodeURIComponent(this.state.name) + '&password=' + encodeURIComponent(this.state.password)).then(function (response) {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-        }).then(function (response) {
-            // 서버로부터의 응답을 처리
-            console.log(response.data.id); // 서버에서 받은 데이터
-            if (response.status === 200) {
+            return response.json();
+        }).then(function (data) {
+            console.log(data.id); // 서버에서 받은 데이터
+            if (data.id) {
                 // 로그인 성공 시 다음 작업 수행
-                _this2.props.onSignin(_this2.state.name, response.data.id);
+                _this2.props.onSignin(_this2.state.name, data.id);
             } else {
                 // 로그인 실패 시 오류 메시지 표시
                 alert("⚠️로그인 정보를 확인해주세요");
-                console.error('로그인 실패:', response.data);
+                console.error('로그인 실패:', data);
             }
         })['catch'](function (error) {
             // 오류 처리

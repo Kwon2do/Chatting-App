@@ -4,9 +4,7 @@ var React = require('react');
 var Signup = require('./signup.jsx');
 var ChatApp = require('./chat.jsx');
 var ChattingRoom = require('./chattingroomList.jsx');
-var JoinedChattingRoom = require('./joinedchatting.jsx')
-var axios = require('axios'); // axios 임포트
-const JoinedRoom = require('./joinedchatting.jsx');
+var JoinedRoom = require('./joinedchatting.jsx');
 
 var App = React.createClass({
 
@@ -31,9 +29,10 @@ var App = React.createClass({
         // roomId를 상태에 설정하고 chat 페이지로 전환
         this.setState({ roomId: roomId });
         // 채팅방 ID를 사용하여 채팅방 이름을 가져오는 API 호출
-        axios.get(`/api/rooms/${roomId}`)
-            .then(response => {
-                this.setState({ roomname: response.data.roomname, page: 'chat' });
+        fetch(`/api/rooms/${roomId}`)
+            .then(response => response.json())
+            .then(data => {
+                this.setState({ roomname: data.roomname, page: 'chat' });
             })
             .catch(error => {
                 console.error("채팅방 이름을 가져오는 중 오류 발생:", error);

@@ -31,21 +31,21 @@ app.post("/api/sign-up", (req, res) => {
   conn.query(checkQuery, [userId], (checkError, checkResults) => {
     if (checkError) {
       console.error(checkError);
-      return res.status(500).send("서버 에러가 발생했습니다");
+      return res.status(500).json({ error: "서버 에러가 발생했습니다" });
     }
 
     if (checkResults.length > 0) {
       // 이미 존재하는 아이디
-      return res.status(409).send("⚠️이미 존재하는 아이디입니다");
+      return res.status(409).json({ error: "⚠️이미 존재하는 아이디입니다" });
     }
 
     const query = "INSERT INTO USERS (userId, password) VALUES (?, ?)";
     conn.query(query, [userId, password], (error, result) => {
       if (error) {
         console.error(error);
-        return res.status(500).send("서버 에러가 발생했습니다");
+        return res.status(500).json({ error: "서버 에러가 발생했습니다" });
       }
-      res.status(200).send("유저 정보를 DB에 저장했습니다");
+      res.status(200).json({ message: "유저 정보를 DB에 저장했습니다" });
     });
   });
 });

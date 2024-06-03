@@ -1,5 +1,4 @@
 var React = require('react');
-var axios = require('axios');
 var NavigationBar = require('./navigation.jsx');
 var { SearchChat } = require('./chattingroom.jsx');
 
@@ -20,9 +19,10 @@ var JoinedChattingRoom = React.createClass({
     },
 
     fetchChatRooms() {
-        axios.get(`/api/joined-roomlist/${this.props.userId}`)
-            .then(response => {
-                this.setState({ chatRooms: response.data });
+        fetch(`/api/joined-roomlist/${this.props.userId}`)
+            .then(response => response.json())
+            .then(data => {
+                this.setState({ chatRooms: data });
                 console.log(this.state.chatRooms);
             })
             .catch(error => {

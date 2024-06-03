@@ -1,5 +1,4 @@
 var React = require('react');
-var axios = require('axios');
 var NavigationBar = require('./navigation.jsx');
 var { SearchChat, ChatRoomList } = require('./chattingroom.jsx');
 
@@ -13,15 +12,21 @@ var ChatRoomListAndSearchPage = React.createClass({
     handleSearchChange(searchText) {
         this.setState({ searchText });
     },
+
     handleCreate(e) {
-        axios.post('/api/rooms/create', {
-            roomname: this.state.searchText
+        fetch('/api/rooms/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ roomname: this.state.searchText })
         })
-        .then(response => {
-            console.log(response);
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
             alert('채팅방이 개설되었습니다.');
             // 생성된 새로운 채팅방으로 즉시 이동
-            this.props.onRoomSelect(response.data.roomId);
+            this.props.onRoomSelect(data.roomId);
             this.setState({ searchText: '' });
         })
         .catch(error => {
@@ -43,7 +48,10 @@ var ChatRoomListAndSearchPage = React.createClass({
                         onRoomSelect={this.props.onRoomSelect}
                     />
                 </div>
-                <NavigationBar onClickJoinedRoom={this.props.onClickJoinedRoom} onClickBackBtn={this.props.onClickBackBtn}></NavigationBar>
+                <NavigationBar 
+                    onClickJoinedRoom={this.props.onClickJoinedRoom} 
+                    onClickBackBtn={this.props.onClickBackBtn}
+                />
             </div>
         );
     }

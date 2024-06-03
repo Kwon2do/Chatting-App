@@ -21,13 +21,24 @@ var Signup = React.createClass({
         }
 
         // 회원가입 정보를 서버로 전송
-        axios.post('/api/sign-up', {
-            userId: this.state.name,
-            password: this.state.password
+        fetch('/api/sign-up', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: this.state.name,
+                password: this.state.password
+            }),
         })
         .then(response => {
-            // 서버로부터의 응답을 처리
-            console.log(response.data); // 서버에서 받은 데이터
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data); // 서버에서 받은 데이터
             this.props.onSignup(this.state.name);
             alert('회원가입이 완료되었습니다.');
             setTimeout(() => {
@@ -35,12 +46,12 @@ var Signup = React.createClass({
             }, 500); // 0.5초지연을 주어 alert가 먼저 실행되도록 함
         })
         .catch(error => {
-            // 오류 처리
             console.error('Error:', error);
             if (error.response && error.response.status === 409) {
                 this.setState({ alertMessage: '⚠️이미 존재하는 아이디입니다.' });
             }
         });
+        
     },
 
     handleLogin(e) {
@@ -53,29 +64,29 @@ var Signup = React.createClass({
         }
 
         // 로그인 정보를 서버로 전송
-        axios.get('/api/sign-in', {
-            params: {
-                userId: this.state.name,
-                password: this.state.password
-            }
-        })
-        .then(response => {
-            // 서버로부터의 응답을 처리
-            console.log(response.data.id); // 서버에서 받은 데이터
-            if (response.status === 200) {
-                // 로그인 성공 시 다음 작업 수행
-                this.props.onSignin(this.state.name, response.data.id);
-            } else {
-                // 로그인 실패 시 오류 메시지 표시
-                alert("⚠️로그인 정보를 확인해주세요");
-                console.error('로그인 실패:', response.data);
-            }
-        })
-        .catch(error => {
-            // 오류 처리
-            console.error('Error:', error);
-            this.setState({ alertMessage: '⚠️ID/PW를 확인해주세요.' });
-        });
+        fetch(`/api/sign-in?userId=${encodeURIComponent(this.state.name)}&password=${encodeURIComponent(this.state.password)}`)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log(data.id); // 서버에서 받은 데이터
+        if (data.id) {
+            // 로그인 성공 시 다음 작업 수행
+            this.props.onSignin(this.state.name, data.id);
+        } else {
+            // 로그인 실패 시 오류 메시지 표시
+            alert("⚠️로그인 정보를 확인해주세요");
+            console.error('로그인 실패:', data);
+        }
+    })
+    .catch(error => {
+        // 오류 처리
+        console.error('Error:', error);
+        this.setState({ alertMessage: '⚠️ID/PW를 확인해주세요.' });
+    });
     },
 
     render() {
