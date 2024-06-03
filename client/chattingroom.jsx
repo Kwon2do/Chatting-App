@@ -22,7 +22,6 @@ var SearchChat = React.createClass({
     }
 });
 
-//채팅방 개설
 // 채팅방 목록 컴포넌트
 var ChatRoomList = React.createClass({
     getInitialState() {

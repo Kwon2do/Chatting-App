@@ -65,28 +65,28 @@ var Signup = React.createClass({
 
         // 로그인 정보를 서버로 전송
         fetch(`/api/sign-in?userId=${encodeURIComponent(this.state.name)}&password=${encodeURIComponent(this.state.password)}`)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log(data.id); // 서버에서 받은 데이터
-        if (data.id) {
-            // 로그인 성공 시 다음 작업 수행
-            this.props.onSignin(this.state.name, data.id);
-        } else {
-            // 로그인 실패 시 오류 메시지 표시
-            alert("⚠️로그인 정보를 확인해주세요");
-            console.error('로그인 실패:', data);
-        }
-    })
-    .catch(error => {
-        // 오류 처리
-        console.error('Error:', error);
-        this.setState({ alertMessage: '⚠️ID/PW를 확인해주세요.' });
-    });
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data.id); // 서버에서 받은 데이터
+            if (data.id) {
+                // 로그인 성공 시 다음 작업 수행
+                this.props.onSignin(this.state.name, data.id);
+            } else {
+                // 로그인 실패 시 오류 메시지 표시
+                alert("⚠️로그인 정보를 확인해주세요");
+                console.error('로그인 실패:', data);
+            }
+        })
+        .catch(error => {
+            // 오류 처리
+            console.error('Error:', error);
+            this.setState({ alertMessage: '⚠️ID/PW를 확인해주세요.' });
+        });
     },
 
     render() {
